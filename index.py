@@ -36,11 +36,38 @@ def format_address(address):
                 street_part = ", ".join(parts[:-1])
                 return f"{street_part}, {city}, {state}"
             else:
-                if len(parts) >= 2:
-                    city = parts[-2]
-                    street_part = ", ".join(parts[:-2]) if len(parts) > 2 else parts[0]
-                    return f"{street_part}, {city}, {state}"
+                # State only in last part, need to extract city from street part
+                street_and_city = parts[-2] if len(parts) >= 2 else parts[0]
 
+                # Try to split street from city in the street_and_city part
+                words = street_and_city.split()
+                if len(words) >= 2:
+                    # Look for city name (usually all caps at the end)
+                    for i in range(len(words) - 1, 0, -1):
+                        potential_city = " ".join(words[i:])
+                        if potential_city.isupper() and len(potential_city) > 2:
+                            street_part = " ".join(words[:i])
+                            if len(parts) > 2:
+                                # There are other parts before the street_and_city
+                                full_street = ", ".join(parts[:-2]) + f", {street_part}"
+                            else:
+                                full_street = street_part
+                            return f"{full_street}, {potential_city}, {state}"
+
+                    # Fallback: assume last word is city
+                    street_part = " ".join(words[:-1])
+                    city = words[-1]
+                    if len(parts) > 2:
+                        full_street = ", ".join(parts[:-2]) + f", {street_part}"
+                    else:
+                        full_street = street_part
+                    return f"{full_street}, {city}, {state}"
+
+                # If we can't split, use the whole part as street
+                street_part = ", ".join(parts[:-1])
+                return f"{street_part}, {state}"
+
+        # No state found, treat last part as city
         city = parts[-1]
         street_part = ", ".join(parts[:-1])
         return f"{street_part}, {city}, FL"
