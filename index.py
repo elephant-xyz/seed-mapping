@@ -45,6 +45,18 @@ def format_address(address):
         street_part = ", ".join(parts[:-1])
         return f"{street_part}, {city}, FL"
 
+    words = clean_address.split()
+    if len(words) >= 2:
+        for i in range(len(words) - 1, 0, -1):
+            potential_city = " ".join(words[i:])
+            if potential_city.isupper() and len(potential_city) > 2:
+                street_part = " ".join(words[:i])
+                return f"{street_part}, {potential_city}, FL"
+
+        street_part = " ".join(words[:-1])
+        city = words[-1]
+        return f"{street_part}, {city}, FL"
+
     return f"{clean_address}, FL"
 
 
